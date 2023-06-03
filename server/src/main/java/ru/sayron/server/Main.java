@@ -59,8 +59,8 @@ public class Main {
             if (port < 0) throw new NotInDeclaredLimitsException();
             databaseHost = args[1];
             databasePassword = args[2];
-            databaseAddress = "jdbc:postgresql://" + databaseHost + ":5432/studs";
-            //databaseAddress = "jdbc:postgresql://localhost:5432/Lab7";
+            //databaseAddress = "jdbc:postgresql://" + databaseHost + ":5432/studs";
+            databaseAddress = "jdbc:postgresql://localhost:5432/Lab7";
             return true;
         } catch (WrongAmountOfElementsException exception) {
             String jarName = new java.io.File(Main.class.getProtectionDomain()

@@ -1,62 +1,46 @@
 package ru.sayron.client;
 
-import ru.sayron.client.command.Client1;
-import ru.sayron.client.command.ExecScript;
-import ru.sayron.client.utility.UserHandler;
+import ru.sayron.client.controllers.AskWindowController;
+import ru.sayron.client.controllers.LoginWindowController;
+import ru.sayron.client.controllers.MainWindowController;
+import ru.sayron.client.controllers.tools.ObservableResourceFactory;
+import ru.sayron.client.utility.Outputer;
+import ru.sayron.client.utility.OutputerUI;
 import ru.sayron.common.exceptions.NotInDeclaredLimitsException;
 import ru.sayron.common.exceptions.WrongAmountOfElementsException;
-import ru.sayron.common.utility.Outputer;
-import ru.sayron.client.utility.AuthHandler;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.util.ResourceBundle;
 import java.util.Scanner;
 
-public class Main {
+public class Main extends Application {
     public static final String PS1 = "$ ";
     public static final String PS2 = "> ";
+    public static final String BUNDLE = "bundles.gui";
 
-    private static final int RECONNECTION_TIMEOUT = 5 * 1000;
-    private static final int MAX_RECONNECTION_ATTEMPTS = 5;
+    private static final String APP_TITLE = "Collection Keeper";
 
     private static String host;
     private static int port;
-    private static String script;
+    private static Scanner userScanner;
+    private static Client client;
+    private static ObservableResourceFactory resourceFactory;
+    private Stage primaryStage;
 
-/*  private static boolean initializeConnectionAddress(String[] hostAndPortArgs) {
-        try {
-            if (hostAndPortArgs.length > 3 ) throw new WrongAmountOfElementsException();
-            if (hostAndPortArgs.length == 2) {
-                host = hostAndPortArgs[0];
-                port = Integer.parseInt(hostAndPortArgs[1]);
-            } else if (hostAndPortArgs.length == 3) {
-                host = hostAndPortArgs[0];
-                port = Integer.parseInt(hostAndPortArgs[1]);
-                script = hostAndPortArgs[2];
-            }
-            if (port < 0) throw new NotInDeclaredLimitsException();
-            return true;
-        } catch (WrongAmountOfElementsException exception) {
-            String jarName = new java.io.File(Main.class.getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .getPath())
-                    .getName();
-            Outputer.println("Usage: 'java -jar " + jarName + " <host> <port>'");
-        } catch (NumberFormatException exception) {
-            Outputer.printerror("The port must be represented by a number!");
-        } catch (NotInDeclaredLimitsException exception) {
-            Outputer.printerror("The port cannot be negative!");
-        }
-        return false;
-    }
-*/
+
     public static void main(String[] args) {
-        if (!initialize(args)) return;
-        Scanner userScanner = new Scanner(System.in);
-        AuthHandler authHandler = new AuthHandler(userScanner);
-        UserHandler userHandler = new UserHandler(userScanner);
-        Client client = new Client(host, port, RECONNECTION_TIMEOUT, MAX_RECONNECTION_ATTEMPTS, userHandler, authHandler);
-        client.run();
-        userScanner.close();
+        resourceFactory = new ObservableResourceFactory();
+        resourceFactory.setResources(ResourceBundle.getBundle(BUNDLE));
+        OutputerUI.setResourceFactory(resourceFactory);
+        Outputer.setResourceFactory(resourceFactory);
+
+        if (initialize(args)) launch(args);
+        else System.exit(0);
     }
 
     private static boolean initialize(String[] args) {
@@ -72,31 +56,92 @@ public class Main {
                     .getLocation()
                     .getPath())
                     .getName();
-            Outputer.println("Использование: 'java -jar " + jarName + " <host> <port>'");
+            Outputer.println("Using", "'java -jar " + jarName + " <host> <port>'");
         } catch (NumberFormatException exception) {
-            Outputer.printerror("Порт должен быть представлен числом!");
+            Outputer.printerror("PortMustBeNumber");
         } catch (NotInDeclaredLimitsException exception) {
-            Outputer.printerror("Порт не может быть отрицательным!");
+            Outputer.printerror("PortMustBeNotNegative");
         }
         return false;
     }
 
+    @Override
+    public void start(Stage stage) {
+        try {
+            this.primaryStage = stage;
 
-/*    public static void main(String[] args) {
-        if (!initializeConnectionAddress(args)) return;
-        if (script == null) {
-            Scanner userScanner = new Scanner(System.in);
-            UserHandler userHandler = new UserHandler(userScanner);
-            Client client = new Client(host, port, RECONNECTION_TIMEOUT, MAX_RECONNECTION_ATTEMPTS, userHandler);
-            client.run();
-            userScanner.close();
-        } else {
-            Scanner userScanner = new Scanner(System.in);
-            ExecScript execScript = new ExecScript(userScanner, script);
-            Client1 client = new Client1(host, port, RECONNECTION_TIMEOUT, MAX_RECONNECTION_ATTEMPTS, execScript);
-            client.run();
-            userScanner.close();
+            FXMLLoader loginWindowLoader = new FXMLLoader();
+            loginWindowLoader.setLocation(getClass().getResource("/view/LoginWindow.fxml"));
+            Parent loginWindowRootNode = loginWindowLoader.load();
+            Scene loginWindowScene = new Scene(loginWindowRootNode);
+            LoginWindowController loginWindowController = loginWindowLoader.getController();
+            loginWindowController.setApp(this);
+            loginWindowController.setClient(client);
+            loginWindowController.initLangs(resourceFactory);
+
+            primaryStage.setTitle(APP_TITLE);
+
+            primaryStage.setScene(loginWindowScene);
+            primaryStage.setResizable(false);
+            primaryStage.show();
+        } catch (Exception exception) {
+            System.out.println(exception);
+            exception.printStackTrace();
         }
     }
- */
-}
+
+        @Override
+        public void init() {
+            userScanner = new Scanner(System.in);
+            client = new Client(host, port);
+
+            client.run();
+        }
+
+        @Override
+        public void stop() {
+            client.stop();
+            userScanner.close();
+        }
+
+
+        public void setMainWindow() {
+            try {
+                FXMLLoader mainWindowLoader = new FXMLLoader();
+                mainWindowLoader.setLocation(getClass().getResource("/view/MainWindow.fxml"));
+                Parent mainWindowRootNode = mainWindowLoader.load();
+                Scene mainWindowScene = new Scene(mainWindowRootNode);
+                MainWindowController mainWindowController = mainWindowLoader.getController();
+                mainWindowController.initLangs(resourceFactory);
+
+                FXMLLoader askWindowLoader = new FXMLLoader();
+                askWindowLoader.setLocation(getClass().getResource("/view/AskWindow.fxml"));
+                Parent askWindowRootNode = askWindowLoader.load();
+                Scene askWindowScene = new Scene(askWindowRootNode);
+                Stage askStage = new Stage();
+                askStage.setTitle(APP_TITLE);
+                askStage.setScene(askWindowScene);
+                askStage.setResizable(false);
+                askStage.initModality(Modality.WINDOW_MODAL);
+                askStage.initOwner(primaryStage);
+                AskWindowController askWindowController = askWindowLoader.getController();
+                askWindowController.setAskStage(askStage);
+                askWindowController.initLangs(resourceFactory);
+
+                mainWindowController.setClient(client);
+                mainWindowController.setUsername(client.getUsername());
+                mainWindowController.setAskStage(askStage);
+                mainWindowController.setPrimaryStage(primaryStage);
+                mainWindowController.setAskWindowController(askWindowController);
+                mainWindowController.refreshButtonOnAction();
+
+                primaryStage.setScene(mainWindowScene);
+                primaryStage.setMinWidth(mainWindowScene.getWidth());
+                primaryStage.setMinHeight(mainWindowScene.getHeight());
+                primaryStage.setResizable(true);
+            } catch (Exception exception) {
+                System.out.println(exception);
+                exception.printStackTrace();
+            }
+        }
+    }

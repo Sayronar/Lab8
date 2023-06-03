@@ -1,150 +1,207 @@
 package ru.sayron.client;
 
-import ru.sayron.client.utility.AuthHandler;
-import ru.sayron.client.utility.UserHandler;
+import ru.sayron.client.controllers.MainWindowController;
+import ru.sayron.client.utility.Outputer;
+import ru.sayron.client.utility.OutputerUI;
+import ru.sayron.client.utility.ScriptHandler;
+import ru.sayron.common.data.Organization;
 import ru.sayron.common.exceptions.ConnectionErrorException;
 import ru.sayron.common.exceptions.NotInDeclaredLimitsException;
 import ru.sayron.common.interaction.Request;
 import ru.sayron.common.interaction.Response;
 import ru.sayron.common.interaction.ResponseCode;
 import ru.sayron.common.interaction.User;
-import ru.sayron.common.utility.Outputer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.NavigableSet;
 
-public class Client {
+/**
+ * Runs the client.
+ */
+public class Client implements Runnable {
     private String host;
     private int port;
-    private int reconnectionTimeout;
-    private int reconnectionAttempts;
-    private int maxReconnectionAttempts;
-    private UserHandler userHandler;
     private SocketChannel socketChannel;
     private ObjectOutputStream serverWriter;
     private ObjectInputStream serverReader;
-    private AuthHandler authHandler;
     private User user;
+    private boolean isConnected;
 
-    public Client(String host, int port, int reconnectionTimeout, int maxReconnectionAttempts, UserHandler userHandler,
-                  AuthHandler authHandler) {
+    public Client(String host, int port) {
         this.host = host;
         this.port = port;
-        this.reconnectionTimeout = reconnectionTimeout;
-        this.maxReconnectionAttempts = maxReconnectionAttempts;
-        this.userHandler = userHandler;
-        this.authHandler = authHandler;
     }
 
-
+    @Override
     public void run() {
         try {
-            while (true) {
-                try {
-                    connectToServer();
-                    processAuthentication();
-                    processRequestToServer();
-                    break;
-                } catch (ConnectionErrorException exception) {
-                    if (reconnectionAttempts >= maxReconnectionAttempts) {
-                        Outputer.printerror("Превышено количество попыток подключения!");
-                        break;
-                    }
-                    try {
-                        Thread.sleep(reconnectionTimeout);
-                    } catch (IllegalArgumentException timeoutException) {
-                        Outputer.printerror("Время ожидания подключения '" + reconnectionTimeout +
-                                "' находится за пределами возможных значений!");
-                        Outputer.println("Повторное подключение будет произведено немедленно.");
-                    } catch (Exception timeoutException) {
-                        Outputer.printerror("Произошла ошибка при попытке ожидания подключения!");
-                        Outputer.println("Повторное подключение будет произведено немедленно.");
-                    }
-                }
-                reconnectionAttempts++;
-            }
-            if (socketChannel != null) socketChannel.close();
-            Outputer.println("Работа клиента завершена.");
+            connectToServer();
         } catch (NotInDeclaredLimitsException exception) {
-            Outputer.printerror("Клиент не может быть запущен!");
-        } catch (IOException exception) {
-            Outputer.printerror("Произошла ошибка при попытке завершить соединение с сервером!");
-        }
+            Outputer.printerror("ClientException");
+            System.exit(0);
+        } catch (ConnectionErrorException exception) { /* ? */ }
     }
 
-
-    private void connectToServer() throws ConnectionErrorException, NotInDeclaredLimitsException {
+    /**
+     * Stops a client.
+     */
+    public void stop() {
         try {
-            if (reconnectionAttempts >= 1) Outputer.println("Reconnecting to the server...");
-            socketChannel = SocketChannel.open(new InetSocketAddress(host, port));
-            Outputer.println("The connection to the server was successfully established.");
-            Outputer.println("Waiting for permission to share data...");
-            serverWriter = new ObjectOutputStream(socketChannel.socket().getOutputStream());
-            serverReader = new ObjectInputStream(socketChannel.socket().getInputStream());
-            Outputer.println("Permission to share data received.");
-        } catch (IllegalArgumentException exception) {
-            Outputer.printerror("Server address entered incorrectly!");
-            throw new NotInDeclaredLimitsException();
-        } catch (IOException exception) {
-            Outputer.printerror("An error occurred while connecting to the server!");
-            throw new ConnectionErrorException();
+            processRequestToServer(MainWindowController.EXIT_COMMAND_NAME, "", null);
+            socketChannel.close();
+            Outputer.println("EndWorkOfClient");
+        } catch (IOException | NullPointerException exception) {
+            Outputer.printerror("EndWorkOfClientException");
+            if (socketChannel == null) Outputer.printerror("EndRunningWorkOfClientException");
         }
     }
 
-
-    private boolean processRequestToServer() {
+    /**
+     * Server request process.
+     *
+     * @param commandName           Command name.
+     * @param commandStringArgument Command string argument.
+     * @param commandObjectArgument Command object argument.
+     * @return Collection.
+     */
+    public NavigableSet<Organization> processRequestToServer(String commandName, String commandStringArgument,
+                                                            Serializable commandObjectArgument) {
         Request requestToServer = null;
         Response serverResponse = null;
+        try {
+            requestToServer = new Request(commandName, commandStringArgument, commandObjectArgument, user);
+            serverWriter.writeObject(requestToServer);
+            serverResponse = (Response) serverReader.readObject();
+            if (!serverResponse.getResponseBody().isEmpty())
+                OutputerUI.tryError(serverResponse.getResponseBody(), serverResponse.getResponseBodyArgs());
+        } catch (InvalidClassException | NotSerializableException exception) {
+            OutputerUI.error("DataSendingException");
+        } catch (ClassNotFoundException exception) {
+            OutputerUI.error("DataReadingException");
+        } catch (IOException exception) {
+            if (requestToServer.getCommandName().equals(MainWindowController.EXIT_COMMAND_NAME)) return null;
+            OutputerUI.error("EndConnectionToServerException");
+            try {
+                connectToServer();
+                OutputerUI.info("ConnectionToServerComplete");
+            } catch (ConnectionErrorException | NotInDeclaredLimitsException reconnectionException) {
+                OutputerUI.info("TryCommandLater");
+            }
+        }
+        return serverResponse == null ? null : serverResponse.getOrganizationsCollection();
+    }
+
+    /**
+     * Server script process.
+     *
+     * @param scriptFile Scipt file.
+     * @return Is everything OK.
+     */
+    public boolean processScriptToServer(File scriptFile) {
+        Request requestToServer = null;
+        Response serverResponse = null;
+        ScriptHandler scriptHandler = new ScriptHandler(scriptFile);
         do {
             try {
-                requestToServer = serverResponse != null ? userHandler.handle(serverResponse.getResponseCode(), user) :
-                        userHandler.handle(null, user);
+                requestToServer = serverResponse != null ? scriptHandler.handle(serverResponse.getResponseCode(), user) :
+                        scriptHandler.handle(null, user);
+                if (requestToServer == null) return false;
                 if (requestToServer.isEmpty()) continue;
                 serverWriter.writeObject(requestToServer);
                 serverResponse = (Response) serverReader.readObject();
-                Outputer.print(serverResponse.getResponseBody());
+                if (!serverResponse.getResponseBody().isEmpty())
+                    OutputerUI.tryError(serverResponse.getResponseBody(), serverResponse.getResponseBodyArgs());
             } catch (InvalidClassException | NotSerializableException exception) {
-                Outputer.printerror("An error occurred while sending data to the server!");
+                OutputerUI.error("DataSendingException");
             } catch (ClassNotFoundException exception) {
-                Outputer.printerror("An error occurred while reading the received data!");
+                OutputerUI.error("DataReadingException");
             } catch (IOException exception) {
-                Outputer.printerror("The connection to the server has been broken!");
+                OutputerUI.error("EndConnectionToServerException");
                 try {
-                    reconnectionAttempts++;
                     connectToServer();
+                    OutputerUI.info("ConnectionToServerComplete");
                 } catch (ConnectionErrorException | NotInDeclaredLimitsException reconnectionException) {
-                    if (requestToServer.getCommandName().equals("exit"))
-                        Outputer.println("The team will not be registered on the server.");
-                    else Outputer.println("Try to repeat the command later.");
+                    OutputerUI.info("TryCommandLater");
                 }
             }
-        } while (!requestToServer.getCommandName().equals("client_exit"));
+        } while (!requestToServer.getCommandName().equals("exit"));
+        return true;
+    }
+
+    /**
+     * Handle process authentication.
+     *
+     * @param username Username.
+     * @param password Password.
+     * @param register Register.
+     * @return Is everything OK.
+     */
+    public boolean processAuthentication(String username, String password, boolean register) {
+        // TODO: Переместить все в один метод (?)
+        Request requestToServer = null;
+        Response serverResponse = null;
+        String command;
+        try {
+            command = register ? MainWindowController.REGISTER_COMMAND_NAME : MainWindowController.LOGIN_COMMAND_NAME;
+            requestToServer = new Request(command, "", new User(username, password));
+            if (serverWriter == null) throw new IOException();
+            serverWriter.writeObject(requestToServer);
+            serverResponse = (Response) serverReader.readObject();
+            OutputerUI.tryError(serverResponse.getResponseBody(), serverResponse.getResponseBodyArgs());
+        } catch (InvalidClassException | NotSerializableException exception) {
+            OutputerUI.error("DataSendingException");
+        } catch (ClassNotFoundException exception) {
+            OutputerUI.error("DataReadingException");
+        } catch (IOException exception) {
+            OutputerUI.error("EndConnectionToServerException");
+            try {
+                connectToServer();
+                OutputerUI.info("ConnectionToServerComplete");
+            } catch (ConnectionErrorException | NotInDeclaredLimitsException reconnectionException) {
+                OutputerUI.info("TryAuthLater");
+            }
+        }
+        if (serverResponse != null && serverResponse.getResponseCode().equals(ResponseCode.OK)) {
+            user = requestToServer.getUser();
+            return true;
+        }
         return false;
     }
-    private void processAuthentication() {
-        Request requestToServer = null;
-        Response serverResponse = null;
-        do {
-            try {
-                requestToServer = authHandler.handle();
-                if (requestToServer.isEmpty()) continue;
-                serverWriter.writeObject(requestToServer);
-                serverResponse = (Response) serverReader.readObject();
-                Outputer.print(serverResponse.getResponseBody());
-            } catch (InvalidClassException | NotSerializableException exception) {
-                Outputer.printerror("Произошла ошибка при отправке данных на сервер!");
-            } catch (ClassNotFoundException exception) {
-                Outputer.printerror("Произошла ошибка при чтении полученных данных!");
-            } catch (IOException exception) {
-                Outputer.printerror("Соединение с сервером разорвано!");
-                try {
-                    connectToServer();
-                } catch (ConnectionErrorException | NotInDeclaredLimitsException reconnectionException) {
-                    Outputer.println("Попробуйте повторить авторизацию позднее.");
-                }
-            }
-        } while (serverResponse == null || !serverResponse.getResponseCode().equals(ResponseCode.OK));
-        user = requestToServer.getUser();
+
+    /**
+     * Checking to connected of client.
+     *
+     * @return Status of connection.
+     */
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public String getUsername() {
+        return user == null ? null : user.getUsername();
+    }
+
+    /**
+     * Connecting to server.
+     */
+    private void connectToServer() throws ConnectionErrorException, NotInDeclaredLimitsException {
+        try {
+            Outputer.println("ConnectionToServer");
+            socketChannel = SocketChannel.open(new InetSocketAddress(host, port));
+            serverWriter = new ObjectOutputStream(socketChannel.socket().getOutputStream());
+            serverReader = new ObjectInputStream(socketChannel.socket().getInputStream());
+            isConnected = true;
+            Outputer.println("ConnectionToServerComplete");
+        } catch (IllegalArgumentException exception) {
+            Outputer.printerror("ServerAddressException");
+            isConnected = false;
+            throw new NotInDeclaredLimitsException();
+        } catch (IOException exception) {
+            Outputer.printerror("ConnectionToServerException");
+            isConnected = false;
+            throw new ConnectionErrorException();
+        }
     }
 }
