@@ -240,7 +240,7 @@ public class AskWindowController {
      */
     private int convertTownX() throws IllegalArgumentException {
         String strX;
-        long x;
+        int x;
         try {
             strX = townXField.getText();
             x = Integer.parseInt(strX);
@@ -323,7 +323,9 @@ public class AskWindowController {
         coordinatesYField.setText(organization.getCoordinates().getY() + "");
         annualTurnoverField.setText(organization.getAnnualTurnover() + "");
         addressStreetField.setText(organization.getOfficialAddress().getStreet());
-        addressTownField.setText(organization.getOfficialAddress().getTown() + "");
+        townXField.setText(organization.getOfficialAddress().getTown().getX() + "");
+        townYField.setText(organization.getOfficialAddress().getTown().getY() + "");
+        townZField.setText(organization.getOfficialAddress().getTown().getZ() + "");
         fullNameField.setText(organization.getFullName() + "");
         employeesCountField.setText(organization.getEmployeesCount() + "");
         organizationTypeBox.setValue(organization.getType());
@@ -340,7 +342,9 @@ public class AskWindowController {
         fullNameField.clear();
         employeesCountField.clear();
         addressStreetField.clear();
-        addressTownField.clear();
+        townXField.clear();
+        townYField.clear();
+        townZField.clear();
         organizationTypeBox.setValue(OrganizationType.PUBLIC);
     }
 
