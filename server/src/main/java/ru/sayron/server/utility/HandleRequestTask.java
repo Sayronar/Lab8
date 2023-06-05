@@ -13,10 +13,12 @@ import java.util.concurrent.RecursiveTask;
 public class HandleRequestTask extends RecursiveTask<Response> {
     private Request request;
     private CommandManager commandManager;
+    private CollectionManager collectionManager;
 
-    public HandleRequestTask(Request request, CommandManager commandManager) {
+    public HandleRequestTask(Request request, CommandManager commandManager, CollectionManager collectionManager) {
         this.request = request;
         this.commandManager = commandManager;
+        this.collectionManager = collectionManager;
     }
 
     @Override
@@ -28,7 +30,8 @@ public class HandleRequestTask extends RecursiveTask<Response> {
         commandManager.addToHistory(request.getCommandName(), request.getUser());
         ResponseCode responseCode = executeCommand(request.getCommandName(), request.getCommandStringArgument(),
                 request.getCommandObjectArgument(), hashedUser);
-        return new Response(responseCode, ResponseOutputer.getAndClear());
+        return new Response(responseCode, ResponseOutputer.getAndClear(), ResponseOutputer.getArgsAndClear(),
+                collectionManager.getCollection());
     }
 
     /**
@@ -44,16 +47,8 @@ public class HandleRequestTask extends RecursiveTask<Response> {
         switch (command) {
             case "":
                 break;
-            case "help":
-                if (!commandManager.help(commandStringArgument, commandObjectArgument, user))
-                    return ResponseCode.ERROR;
-                break;
             case "info":
                 if (!commandManager.info(commandStringArgument, commandObjectArgument, user))
-                    return ResponseCode.ERROR;
-                break;
-            case "show":
-                if (!commandManager.show(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
             case "add":
@@ -80,10 +75,12 @@ public class HandleRequestTask extends RecursiveTask<Response> {
                 if (!commandManager.exit(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 return ResponseCode.CLIENT_EXIT;
-            case "add_if_min":
-                if (!commandManager.removeLower(commandStringArgument, commandObjectArgument, user))
+            /*case "add_if_min":
+                if (!commandManager.addIfMin(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
+
+             */
             case "remove_greater":
                 if (!commandManager.removeGreater(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
@@ -92,22 +89,12 @@ public class HandleRequestTask extends RecursiveTask<Response> {
                 if (!commandManager.history(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
-            case "sum_of_health":
-                if (!commandManager.countByEmployeesCount(commandStringArgument, commandObjectArgument, user))
+            /*case "sum_of_health":
+                if (!commandManager.sumOfHealth(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
-            case "max_by_melee_weapon":
-                if (!commandManager.filterGreaterThanEmployeesCount(commandStringArgument, commandObjectArgument, user))
-                    return ResponseCode.ERROR;
-                break;
-            case "filter_by_weapon_type":
-                if (!commandManager.filterContainsName(commandStringArgument, commandObjectArgument, user))
-                    return ResponseCode.ERROR;
-                break;
-            case "server_exit":
-                if (!commandManager.serverExit(commandStringArgument, commandObjectArgument, user))
-                    return ResponseCode.ERROR;
-                return ResponseCode.SERVER_EXIT;
+
+             */
             case "login":
                 if (!commandManager.login(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
@@ -116,6 +103,12 @@ public class HandleRequestTask extends RecursiveTask<Response> {
                 if (!commandManager.register(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
+            /*case "refresh":
+                if (!commandManager.refresh(commandStringArgument, commandObjectArgument, user))
+                    return ResponseCode.ERROR;
+                break;
+
+             */
             default:
                 ResponseOutputer.appendln("Команда '" + command + "' не найдена. Наберите 'help' для справки.");
                 return ResponseCode.ERROR;

@@ -11,7 +11,7 @@ import ru.sayron.server.utility.*;
 public class Main {
     private static final int MAX_CLIENTS = 1000;
     public static Logger logger = (Logger) LoggerFactory.getLogger("ServerLogger");
-    private static String databaseUsername = "s367868";
+    private static String databaseUsername = "postgres";
     private static int port;
     private static String databaseHost;
     private static String databasePassword;
@@ -44,7 +44,7 @@ public class Main {
                 new LoginCommand(databaseUserManager),
                 new RegisterCommand(databaseUserManager)
         );
-        Server server = new Server(port, MAX_CLIENTS, commandManager);
+        Server server = new Server(port, MAX_CLIENTS, commandManager, collectionManager);
         server.run();
         databaseHandler.closeConnection();
     }
