@@ -35,15 +35,15 @@ public class AddCommand extends AbstractCommand {
             if (!stringArgument.isEmpty() || objectArgument == null) throw new WrongAmountOfElementsException();
             OrganizationRaw organizationRaw = (OrganizationRaw) objectArgument;
             collectionManager.addToCollection(databaseCollectionManager.insertOrganization(organizationRaw, user));
-            Outputer.println("Organization added successfully!");
+            ResponseOutputer.appendln("Organization added successfully!");
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Usage: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using");
+            ResponseOutputer.appendargs(getName() + " " + getUsage() + "'");
         } catch (ClassCastException exception) {
-            ResponseOutputer.appenderror("The object passed by the client is invalid!");
+            ResponseOutputer.appenderror("ClientObjectException");
         } catch (DatabaseHandlingException exception) {
-            exception.printStackTrace();
-            ResponseOutputer.appenderror("Произошла ошибка при обращении к базе данных!");
+            ResponseOutputer.appenderror("DatabaseHandlingException");
         }
         return false;
     }

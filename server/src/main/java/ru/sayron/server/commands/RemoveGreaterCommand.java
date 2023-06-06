@@ -56,24 +56,23 @@ public class RemoveGreaterCommand extends AbstractCommand {
                 databaseCollectionManager.deleteOrganizationById(organization.getId());
                 collectionManager.removeFromCollection(organization);
             }
-            Outputer.println("Organizations deleted successfully!");
+            ResponseOutputer.appendln("OrganizationsWasDeleted");
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            Outputer.println("Usage: '" + getName() + "'");
+            ResponseOutputer.appendln("Using");
+            ResponseOutputer.appendargs(getName() + " " + getUsage() + "'");
         } catch (CollectionIsEmptyException exception) {
-            Outputer.printerror("The collection is empty!");
+            ResponseOutputer.appenderror("CollectionIsEmptyException");
         } catch (OrganizationNotFoundException exception) {
-            Outputer.printerror("There are no organizations with such characteristics in the collection!");
+            ResponseOutputer.appenderror("OrganizationException");
         } catch (ClassCastException exception) {
-            ResponseOutputer.appenderror("The object passed by the client is invalid!");
+            ResponseOutputer.appenderror("ClientObjectException");
         } catch (DatabaseHandlingException exception) {
-            ResponseOutputer.appenderror("Произошла ошибка при обращении к базе данных!");
+            ResponseOutputer.appenderror("DatabaseHandlingException");
         } catch (PermissionDeniedException exception) {
-            ResponseOutputer.appenderror("Недостаточно прав для выполнения данной команды!");
-            ResponseOutputer.appendln("Принадлежащие другим пользователям объекты доступны только для чтения.");
+            ResponseOutputer.appenderror("NoughRightsException");
         } catch (ManualDatabaseEditException exception) {
-            ResponseOutputer.appenderror("Произошло прямое изменение базы данных!");
-            ResponseOutputer.appendln("Перезапустите клиент для избежания возможных ошибок.");
+            ResponseOutputer.appenderror("ManualDatabaseException");
         }
         return false;
     }

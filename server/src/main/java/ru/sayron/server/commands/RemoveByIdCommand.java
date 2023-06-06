@@ -40,21 +40,20 @@ public class RemoveByIdCommand extends AbstractCommand {
             Outputer.println("Organization successfully deleted!");
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            Outputer.println("Usage: '" + getName() + "'");
+            ResponseOutputer.appendln("Using");
+            ResponseOutputer.appendargs(getName() + " " + getUsage() + "'");
         } catch (CollectionIsEmptyException exception) {
-            Outputer.printerror("The collection is empty!");
+            ResponseOutputer.appenderror("CollectionIsEmptyException");
         } catch (NumberFormatException exception) {
-            Outputer.printerror("ID must be represented by a number!");
+            ResponseOutputer.appenderror("IdMustBeNumberException");
         } catch (OrganizationNotFoundException exception) {
-            Outputer.printerror("There is no organization with this ID in the collection!");
+            ResponseOutputer.appenderror("IdOfOrganizationException");
         } catch (DatabaseHandlingException exception) {
-            ResponseOutputer.appenderror("Произошла ошибка при обращении к базе данных!");
+            ResponseOutputer.appenderror("DatabaseHandlingException");
         } catch (PermissionDeniedException exception) {
-            ResponseOutputer.appenderror("Недостаточно прав для выполнения данной команды!");
-            ResponseOutputer.appendln("Принадлежащие другим пользователям объекты доступны только для чтения.");
+            ResponseOutputer.appenderror("NoughRightsException");
         } catch (ManualDatabaseEditException exception) {
-            ResponseOutputer.appenderror("Произошло прямое изменение базы данных!");
-            ResponseOutputer.appendln("Перезапустите клиент для избежания возможных ошибок.");
+            ResponseOutputer.appenderror("ManualDatabaseException");
         }
         return false;
     }

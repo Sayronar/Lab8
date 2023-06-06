@@ -1,13 +1,17 @@
-package ru.sayron.server.commands;
+package server.commands;
 
 import ru.sayron.common.exceptions.WrongAmountOfElementsException;
 import ru.sayron.common.interaction.User;
+import ru.sayron.server.commands.AbstractCommand;
 import ru.sayron.server.utility.ResponseOutputer;
 
-public class HelpCommand extends AbstractCommand {
+/**
+ * Command 'exit'. Checks for wrong arguments then do nothing.
+ */
+public class RefreshCommand extends AbstractCommand {
 
-    public HelpCommand() {
-        super("help","", "display help on available commands");
+    public RefreshCommand() {
+        super("refresh", "", "~internal command~");
     }
 
     /**
@@ -21,7 +25,8 @@ public class HelpCommand extends AbstractCommand {
             if (!stringArgument.isEmpty() || objectArgument != null) throw new WrongAmountOfElementsException();
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Usage: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using");
+            ResponseOutputer.appendargs(getName() + " " + getUsage() + "'");
         }
         return false;
     }
