@@ -3,7 +3,6 @@ package ru.sayron.client.utility;
 import ru.sayron.client.Main;
 import ru.sayron.common.exceptions.*;
 import ru.sayron.common.data.*;
-import ru.sayron.common.utility.Outputer;
 
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -57,20 +56,21 @@ public class OrganizationAsker {
         String name;
         while (true) {
             try {
-                Outputer.println("Enter organization name:");
+                Outputer.println("EnterName");
                 Outputer.print(Main.PS2);
                 name = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(name);
                 if (name.equals("")) throw new MustBeNotEmptyException();
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Organization name not recognized!");
+                Outputer.printerror("NameNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (MustBeNotEmptyException exception) {
-                Outputer.printerror("Organization name cannot be empty!");
+                Outputer.printerror("NameEmptyException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -82,20 +82,21 @@ public class OrganizationAsker {
         long x;
         while (true) {
             try {
-                Outputer.println("Enter X coordinate:");
+                Outputer.println("EnterX");
                 Outputer.print(Main.PS2);
                 strX = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strX);
                 x = Long.parseLong(strX);
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("X coordinate not recognized!");
+                Outputer.printerror("XNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("The X coordinate must be represented by a number!");
+                Outputer.printerror("XMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -107,20 +108,21 @@ public class OrganizationAsker {
         Integer y;
         while (true) {
             try {
-                Outputer.println("Enter Y coordinate:");
+                Outputer.println("EnterY");
                 Outputer.print(Main.PS2);
                 strY = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strY);
                 y = Integer.parseInt(strY);
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Y coordinate not recognized!");
+                Outputer.printerror("YNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("The Y coordinate must be represented by a number!");
+                Outputer.printerror("YMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -140,7 +142,7 @@ public class OrganizationAsker {
         int turnover;
         while (true) {
             try {
-                Outputer.println("Enter annual turnover:");
+                Outputer.println("EnterAnnualTurnover");
                 Outputer.print(Main.PS2);
                 strTurnover = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strTurnover);
@@ -148,16 +150,17 @@ public class OrganizationAsker {
                 if (turnover < MIN_TURNOVER) throw new NotInDeclaredLimitsException();
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Annual turnover not recognized!");
+                Outputer.printerror("AnnualTurnoverNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NotInDeclaredLimitsException exception) {
-                Outputer.printerror("Annual turnover must be greater than zero!");
+                Outputer.printerror("AnnualTurnoverMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("Annual turnover must be represented by a number!");
+                Outputer.printerror("AnnualTurnoverMustBeMoreZero");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -168,20 +171,21 @@ public class OrganizationAsker {
         String fullName;
         while (true) {
             try {
-                Outputer.println("Enter the full name of the company:");
+                Outputer.println("EnterFullName");
                 Outputer.print(Main.PS2);
                 fullName = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(fullName);
                 if (fullName.equals("")) throw new MustBeNotEmptyException();
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Full company name not recognized!");
+                Outputer.printerror("FullNameNotIndentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (MustBeNotEmptyException exception) {
-                Outputer.printerror("The full name of the company cannot be empty!");
+                Outputer.printerror("FullNameMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -193,7 +197,7 @@ public class OrganizationAsker {
         Long employeesCount;
         while (true) {
             try {
-                Outputer.println("Enter the number of employees:");
+                Outputer.println("EnterEmployeesCount");
                 Outputer.print(Main.PS2);
                 strEmployeesCount = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strEmployeesCount);
@@ -201,16 +205,17 @@ public class OrganizationAsker {
                 if (employeesCount < MIN_EMPLOYEES) throw new NotInDeclaredLimitsException();
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("The number of employees is not recognized!");
+                Outputer.printerror("EmployeesCountNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NotInDeclaredLimitsException exception) {
-                Outputer.printerror("The number of employees must be greater than zero!");
+                Outputer.printerror("EmployeesCountMustBeMoreZero");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("The number of employees must be represented by a number!");
+                Outputer.printerror("EmployeesCountMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -222,21 +227,22 @@ public class OrganizationAsker {
         OrganizationType type;
         while (true) {
             try {
-                Outputer.println("List of organization types - " + OrganizationType.nameList());
-                Outputer.println("Enter type:");
+                Outputer.println("TypeList", OrganizationType.nameList());
+                Outputer.println("EnterType");
                 Outputer.print(Main.PS2);
                 strType = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strType);
                 type = OrganizationType.valueOf(strType.toUpperCase());
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Type is not recognized!");
+                Outputer.printerror("TypeNotIndentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (IllegalArgumentException exception) {
-                Outputer.printerror("Type is not listed!");
+                Outputer.printerror("NoSuchType");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -247,20 +253,21 @@ public class OrganizationAsker {
         String StreetName;
         while (true) {
             try {
-                Outputer.println("Enter street:");
+                Outputer.println("EnterStreet");
                 Outputer.print(Main.PS2);
                 StreetName = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(StreetName);
                 if (StreetName.equals("")) throw new MustBeNotEmptyException();
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("The street is not recognized!");
+                Outputer.printerror("StreetNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (MustBeNotEmptyException exception) {
-                Outputer.printerror("The street cannot be empty!");
+                Outputer.printerror("StreetEmptyExeption");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -280,20 +287,21 @@ public class OrganizationAsker {
         int x;
         while (true) {
             try {
-                Outputer.println("Enter X coordinate:");
+                Outputer.println("EnterX");
                 Outputer.print(Main.PS2);
                 strX = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strX);
                 x = Integer.parseInt(strX);
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("X coordinate not recognized!");
+                Outputer.printerror("XNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("The X coordinate must be represented by a number!");
+                Outputer.printerror("XMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -305,20 +313,21 @@ public class OrganizationAsker {
         Float y;
         while (true) {
             try {
-                Outputer.println("Enter Y coordinate:");
+                Outputer.println("EnterY");
                 Outputer.print(Main.PS2);
                 strY = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strY);
                 y = Float.parseFloat(strY);
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Y coordinate not recognized!");
+                Outputer.printerror("YNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("The Y coordinate must be represented by a number!");
+                Outputer.printerror("YMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -331,20 +340,21 @@ public class OrganizationAsker {
         long z;
         while (true) {
             try {
-                Outputer.println("Enter Z coordinate:");
+                Outputer.println("EnterZ");
                 Outputer.print(Main.PS2);
                 strZ = userScanner.nextLine().trim();
                 if (fileMode) Outputer.println(strZ);
                 z = Long.parseLong(strZ);
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Z coordinate not recognized!");
+                Outputer.printerror("ZNotIdentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NumberFormatException exception) {
-                Outputer.printerror("The Z coordinate must be represented by a number!");
+                Outputer.printerror("ZMustBeNumberException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NullPointerException | IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
@@ -379,13 +389,14 @@ public class OrganizationAsker {
                 if (!answer.equals("+") && !answer.equals("-")) throw new NotInDeclaredLimitsException();
                 break;
             } catch (NoSuchElementException exception) {
-                Outputer.printerror("Answer not recognized!");
+                Outputer.printerror("AnswerNotIndentifiedException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (NotInDeclaredLimitsException exception) {
-                Outputer.printerror("The answer must be represented by '+' or '-'!");
+                Outputer.printerror("AnswerLimitsException");
                 if (fileMode) throw new IncorrectInputInScriptException();
             } catch (IllegalStateException exception) {
-                Outputer.printerror("Unexpected error!");
+                Outputer.printerror("UnexpectedException");
+                OutputerUI.error("UnexpectedException");
                 System.exit(0);
             }
         }
