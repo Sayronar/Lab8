@@ -31,29 +31,18 @@ public class CommandManager {
     private Command removeLowerCommand;
     private Command historyCommand;
     private Command employeesCountCommand;
-    private Command filterContainsNameCommand;
-    private Command filterGreaterThanEmployeesCountCommand;
-
-    private Command serverExitCommand;
-    private Command execScriptCommand;
     private Command loginCommand;
     private Command registerCommand;
+    private Command refreshCommand;
 
     private ReadWriteLock historyLocker = new ReentrantReadWriteLock();
     private ReadWriteLock collectionLocker = new ReentrantReadWriteLock();
 
-    public CommandManager(Command helpCommand, Command infoCommand,
-                          Command showCommand, Command addCommand, Command updateIdCommand, Command removeByIdCommand,
+    public CommandManager(Command infoCommand, Command addCommand, Command updateIdCommand, Command removeByIdCommand,
                           Command clearCommand, Command exitCommand, Command executeScriptCommand,
                           Command removeGreaterCommand, Command removeLowerCommand, Command historyCommand,
-                          Command employeesCountCommand, Command filterContainsNameCommand,
-                          Command filterGreaterThanEmployeesCountCommand, Command serverExitCommand, Command execScriptCommand,
-                          Command loginCommand, Command registerCommand) {
-        this.commandHistory = commandHistory;
-        this.commands = commands;
-        this.helpCommand = helpCommand;
+                          Command employeesCountCommand, Command loginCommand, Command registerCommand, Command refreshCommand) {
         this.infoCommand = infoCommand;
-        this.showCommand = showCommand;
         this.addCommand = addCommand;
         this.updateIdCommand = updateIdCommand;
         this.removeByIdCommand = removeByIdCommand;
@@ -64,16 +53,11 @@ public class CommandManager {
         this.removeLowerCommand = removeLowerCommand;
         this.historyCommand = historyCommand;
         this.employeesCountCommand = employeesCountCommand;
-        this.filterContainsNameCommand = filterContainsNameCommand;
-        this.filterGreaterThanEmployeesCountCommand = filterGreaterThanEmployeesCountCommand;
-        this.serverExitCommand = serverExitCommand;
-        this.execScriptCommand = execScriptCommand;
         this.loginCommand = loginCommand;
         this.registerCommand = registerCommand;
+        this.refreshCommand = refreshCommand;
 
-        commands.add(helpCommand);
         commands.add(infoCommand);
-        commands.add(showCommand);
         commands.add(addCommand);
         commands.add(updateIdCommand);
         commands.add(removeByIdCommand);
@@ -84,19 +68,9 @@ public class CommandManager {
         commands.add(removeGreaterCommand);
         commands.add(historyCommand);
         commands.add(employeesCountCommand);
-        commands.add(filterContainsNameCommand);
-        commands.add(filterGreaterThanEmployeesCountCommand);
-        commands.add(serverExitCommand);
-        commands.add(execScriptCommand);
         commands.add(loginCommand);
         commands.add(registerCommand);
-    }
-
-    /**
-     * @return The command history.
-     */
-    public String[] getCommandHistory() {
-        return commandHistory;
+        commands.add(refreshCommand);
     }
 
     /**
@@ -104,32 +78,6 @@ public class CommandManager {
      */
     public List<Command> getCommands() {
         return commands;
-    }
-
-    /**
-     * Prints info about the all commands.
-     *
-     * @param stringArgument Its string argument.
-     * @param objectArgument Its object argument.
-     * @return Command exit status.
-     */
-    public boolean help(String stringArgument, Object objectArgument, User user) {
-        if (helpCommand.execute(stringArgument, objectArgument, user)) {
-            for (Command command : commands) {
-                ResponseOutputer.appendtable(command.getName() + " " + command.getUsage(), command.getDescription());
-            }
-            return true;
-        } else return false;
-    }
-
-    /**
-     * Prints that command is not found.
-     * @param command Comand, which is not found.
-     * @return Command exit status.
-     */
-    public boolean noSuchCommand(String command) {
-        Outputer.println("Команда '" + command + "' не найдена. Наберите 'help' для справки.");
-        return false;
     }
 
     /**
@@ -143,23 +91,6 @@ public class CommandManager {
         collectionLocker.readLock().lock();
         try {
             return infoCommand.execute(stringArgument, objectArgument, user);
-        } finally {
-            collectionLocker.readLock().unlock();
-        }
-    }
-
-    /**
-     * Executes needed command.
-     *
-     * @param stringArgument Its string argument.
-     * @param objectArgument Its object argument.
-     * @param user           User object.
-     * @return Command exit status.
-     */
-    public boolean show(String stringArgument, Object objectArgument, User user) {
-        collectionLocker.readLock().lock();
-        try {
-            return showCommand.execute(stringArgument, objectArgument, user);
         } finally {
             collectionLocker.readLock().unlock();
         }
@@ -232,17 +163,6 @@ public class CommandManager {
             collectionLocker.writeLock().unlock();
         }
     }
-
-    /**
-     * Executes needed command.
-     *
-     * @param stringArgument Its string argument.
-     * @param objectArgument Its object argument.
-     * @return Command exit status.
-     */
-    /*public boolean save(String stringArgument, Object objectArgument, User user) {
-        return saveCommand.execute(stringArgument, objectArgument, user);
-    }*/
 
     /**
      * Executes needed command.
@@ -349,50 +269,6 @@ public class CommandManager {
      *
      * @param stringArgument Its string argument.
      * @param objectArgument Its object argument.
-     * @return Command exit status.
-     */
-    public boolean filterContainsName(String stringArgument, Object objectArgument, User user) {
-        collectionLocker.writeLock().lock();
-        try {
-            return filterContainsNameCommand.execute(stringArgument, objectArgument, user);
-        } finally {
-            collectionLocker.writeLock().unlock();
-        }
-    }
-
-    /**
-     * Executes needed command.
-     *
-     * @param stringArgument Its string argument.
-     * @param objectArgument Its object argument.
-     * @return Command exit status.
-     */
-    public boolean filterGreaterThanEmployeesCount(String stringArgument, Object objectArgument, User user) {
-        collectionLocker.writeLock().lock();
-        try {
-            return filterGreaterThanEmployeesCountCommand.execute(stringArgument, objectArgument, user);
-        } finally {
-            collectionLocker.writeLock().unlock();
-        }
-    }
-
-    /**
-     * Executes needed command.
-     *
-     * @param stringArgument Its string argument.
-     * @param objectArgument Its object argument.
-     * @param user           User object.
-     * @return Command exit status.
-     */
-    public boolean serverExit(String stringArgument, Object objectArgument, User user) {
-        return serverExitCommand.execute(stringArgument, objectArgument, user);
-    }
-
-    /**
-     * Executes needed command.
-     *
-     * @param stringArgument Its string argument.
-     * @param objectArgument Its object argument.
      * @param user           User object.
      * @return Command exit status.
      */
@@ -431,6 +307,18 @@ public class CommandManager {
         } finally {
             historyLocker.writeLock().unlock();
         }
+    }
+
+    /**
+     * Executes needed command.
+     *
+     * @param stringArgument Its string argument.
+     * @param objectArgument Its object argument.
+     * @param user           User object.
+     * @return Command exit status.
+     */
+    public boolean refresh(String stringArgument, Object objectArgument, User user) {
+        return refreshCommand.execute(stringArgument, objectArgument, user);
     }
 
     @Override

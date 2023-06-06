@@ -1,25 +1,25 @@
 package ru.sayron.server.utility;
 
 import ru.sayron.common.data.Organization;
+import ru.sayron.common.exceptions.DatabaseHandlingException;
+import ru.sayron.server.Main;
 
 import java.time.LocalDateTime;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
 public class CollectionManager {
-    private TreeSet<Organization> organizationsCollection;
+    private NavigableSet<Organization> organizationsCollection;
     private LocalDateTime lastInitTime;
-    private LocalDateTime lastSaveTime;
     private DatabaseCollectionManager databaseCollectionManager;
 
-    public CollectionManager(DatabaseCollectionManager fileManager) {
-        this.organizationsCollection = new TreeSet<>();
-        this.lastInitTime = null;
-        this.lastSaveTime = null;
-        this.databaseCollectionManager = fileManager;
+    public CollectionManager(DatabaseCollectionManager databaseCollectionManager) {
+        this.databaseCollectionManager = databaseCollectionManager;
+
+        loadCollection();
     }
 
-    public TreeSet<Organization> getCollection() {
+    public NavigableSet<Organization> getCollection() {
         return organizationsCollection;
     }
 
@@ -28,13 +28,6 @@ public class CollectionManager {
      */
     public LocalDateTime getLastInitTime() {
         return lastInitTime;
-    }
-
-    /**
-     * @return Last save time or null if there wasn't saving.
-     */
-    public LocalDateTime getLastSaveTime() {
-        return lastSaveTime;
     }
 
     /**
@@ -49,22 +42,6 @@ public class CollectionManager {
      */
     public int collectionSize() {
         return organizationsCollection.size();
-    }
-
-    /**
-     * @return The first element of the collection or null if collection is empty.
-     */
-    public Organization getFirst() {
-        if (organizationsCollection.isEmpty()) return null;
-        return organizationsCollection.first();
-    }
-
-    /**
-     * @return The last element of the collection or null if collection is empty.
-     */
-    public Organization getLast() {
-        if (organizationsCollection.isEmpty()) return null;
-        return organizationsCollection.last();
     }
 
     /**
@@ -183,8 +160,6 @@ public class CollectionManager {
         );
     }
 
-
-
     /**
      * Clears the collection.
      */
@@ -193,31 +168,20 @@ public class CollectionManager {
     }
 
     /**
-     * Generates next ID. It will be (the bigger one + 1).
-     * @return Next ID.
-     */
-    public Long generateNextId() {
-        if (organizationsCollection.isEmpty()) return 1L;
-        return (long) (organizationsCollection.last().getId() + 1);
-    }
-
-    /**
-     * Saves the collection to file.
-     */
-    /*public void saveCollection() {
-        fileManager.writeCollection(organizationsCollection);
-        lastSaveTime = LocalDateTime.now();
-        System.out.println("Collection successfully saved.");
-    }*/
-
-    /**
      * Loads the collection from file.
      */
-    /*public void loadCollection() {
-        organizationsCollection = fileManager.readCollection();
-        lastInitTime = LocalDateTime.now();
+    private void loadCollection() {
+        try {
+            organizationsCollection = databaseCollectionManager.getCollection();
+            lastInitTime = LocalDateTime.now();
+            Outputer.println("Коллекция загружена.");
+            Main.logger.info("Коллекция загружена.");
+        } catch (DatabaseHandlingException exception) {
+            organizationsCollection = new TreeSet<>();
+            Outputer.printerror("Коллекция не может быть загружена!");
+            Main.logger.error("Коллекция не может быть загружена!");
+        }
     }
-    */
 
     @Override
     public String toString() {

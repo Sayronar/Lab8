@@ -24,25 +24,20 @@ public class Main {
         DatabaseCollectionManager databaseCollectionManager = new DatabaseCollectionManager(databaseHandler, databaseUserManager);
         CollectionManager collectionManager = new CollectionManager(databaseCollectionManager);
         CommandManager commandManager = new CommandManager(
-                new HelpCommand(),
                 new InfoCommand(collectionManager),
-                new ShowCommand(collectionManager),
                 new AddCommand(collectionManager, databaseCollectionManager),
                 new UpdateIdCommand(collectionManager, databaseCollectionManager),
                 new RemoveByIdCommand(collectionManager, databaseCollectionManager),
                 new ClearCommand(collectionManager, databaseCollectionManager),
-                new ClientExitCommand(),
+                new ExitCommand(),
                 new ExecuteScriptCommand(),
                 new RemoveLowerCommand(collectionManager, databaseCollectionManager),
                 new RemoveGreaterCommand(collectionManager, databaseCollectionManager),
                 new HistoryCommand(),
                 new EmployeesCountCommand(collectionManager),
-                new FilterContainsNameCommand(collectionManager),
-                new FilterGreaterThanEmployeesCountCommand(collectionManager),
-                new ServerExitCommand(),
-                new ExecScriptCommand(),
                 new LoginCommand(databaseUserManager),
-                new RegisterCommand(databaseUserManager)
+                new RegisterCommand(databaseUserManager),
+                new server.commands.RefreshCommand()
         );
         Server server = new Server(port, MAX_CLIENTS, commandManager, collectionManager);
         server.run();
