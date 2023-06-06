@@ -37,7 +37,7 @@ public class RemoveByIdCommand extends AbstractCommand {
             if (!databaseCollectionManager.checkOrganizationUserId(organizationToRemove.getId(), user)) throw new ManualDatabaseEditException();
             databaseCollectionManager.deleteOrganizationById(id);
             collectionManager.removeFromCollection(organizationToRemove);
-            Outputer.println("Organization successfully deleted!");
+            Outputer.println("OrganizationWasDeleted");
             return true;
         } catch (WrongAmountOfElementsException exception) {
             ResponseOutputer.appendln("Using");

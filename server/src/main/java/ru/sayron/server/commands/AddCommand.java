@@ -35,7 +35,7 @@ public class AddCommand extends AbstractCommand {
             if (!stringArgument.isEmpty() || objectArgument == null) throw new WrongAmountOfElementsException();
             OrganizationRaw organizationRaw = (OrganizationRaw) objectArgument;
             collectionManager.addToCollection(databaseCollectionManager.insertOrganization(organizationRaw, user));
-            ResponseOutputer.appendln("Organization added successfully!");
+            ResponseOutputer.appendln("OrganizationWasAdded");
             return true;
         } catch (WrongAmountOfElementsException exception) {
             ResponseOutputer.appendln("Using");

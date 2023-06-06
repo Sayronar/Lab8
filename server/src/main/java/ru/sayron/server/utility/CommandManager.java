@@ -234,13 +234,15 @@ public class CommandManager {
             historyLocker.readLock().lock();
             try {
                 if (commandHistory.length == 0) throw new HistoryIsEmptyException();
-                ResponseOutputer.appendln("Последние использованные команды:");
+                ResponseOutputer.appendln("LastUsingCommand");
+                String arg = "\n";
                 for (String command : commandHistory) {
-                    if (command != null) ResponseOutputer.appendln(" " + command);
+                    if (command != null) arg += (" " + command + "\n");
                 }
+                ResponseOutputer.appendargs(arg);
                 return true;
             } catch (HistoryIsEmptyException exception) {
-                ResponseOutputer.appendln("Ни одной команды еще не было использовано!");
+                ResponseOutputer.appendln("LastUsingCommandException");
             } finally {
                 historyLocker.readLock().unlock();
             }
